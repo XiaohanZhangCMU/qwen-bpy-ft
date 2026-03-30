@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# Virtual envs
+.venv/
+venv/
+env/
+
+# Env / secrets
+.env
+*.env
+
+# Data (keep directory structure, ignore content)
+data/raw/
+data/processed/
+data/eval/results_*
+outputs/
+
+# Blender temp files
+/tmp/*.py
+/tmp/scene_manifest_*.json
+*.blend1
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# LLaMA-Factory cache
+runs/
+wandb/

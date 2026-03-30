@@ -1,0 +1,50 @@
+### Model
+### https://huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct
+model_name_or_path: Qwen/Qwen2.5-Coder-7B-Instruct
+trust_remote_code: true
+
+### Method
+stage: sft
+do_train: true
+finetuning_type: lora
+lora_rank: 64
+lora_alpha: 128
+lora_dropout: 0.05
+lora_target: all            # apply LoRA to all linear layers
+
+### Dataset
+dataset: moonlake_sft
+dataset_dir: data/processed
+template: qwen              # LLaMA-Factory chat template for Qwen models
+cutoff_len: 4096
+max_samples: ~              # null = use all samples
+overwrite_cache: false
+preprocessing_num_workers: 4
+
+### Output
+output_dir: outputs/qwen2_5_coder_7b_lora
+logging_dir: outputs/qwen2_5_coder_7b_lora/logs
+save_strategy: steps
+save_steps: 200
+logging_steps: 10
+overwrite_output_dir: false
+
+### Training
+num_train_epochs: 3
+per_device_train_batch_size: 2
+gradient_accumulation_steps: 8    # effective batch = 2 * 8 * n_gpus ≈ 64 on 4 GPUs
+learning_rate: 5.0e-5
+lr_scheduler_type: cosine
+warmup_ratio: 0.05
+bf16: true
+ddp_timeout: 180000000
+
+### Validation (held-out 5% of training data)
+val_size: 0.05
+per_device_eval_batch_size: 2
+eval_strategy: steps
+eval_steps: 200
+
+### Optional: report to W&B
+# report_to: wandb
+# run_name: moonlake-qwen2_5-7b-lora

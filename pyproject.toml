@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "moonlake"
+version = "0.1.0"
+description = "Blender scene generation via finetuned VLM producing bpy programs"
+requires-python = ">=3.10"
+dependencies = [
+    # Data collection
+    "openai>=1.30",
+    "pydantic>=2.0",
+    "pydantic-settings>=2.0",
+    "tenacity>=8.0",
+    "tqdm>=4.0",
+    "PyYAML>=6.0",
+    # Training (LLaMA-Factory installed separately on cluster)
+    # Evaluation
+    "torch>=2.1",
+    "transformers>=4.40",
+    "accelerate>=0.28",
+    "datasets>=2.18",
+    # CLIP eval
+    "open-clip-torch>=2.24",
+    "Pillow>=10.0",
+    # Utils
+    "rich>=13.0",
+    "jsonlines>=4.0",
+    "python-dotenv>=1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.4",
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+]
+
+[project.scripts]
+moonlake-collect = "data_collection.pipeline:main"
+moonlake-prepare  = "training.prepare_dataset:main"
+moonlake-train    = "training.train:main"
+moonlake-eval     = "evaluation.pipeline:main"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"

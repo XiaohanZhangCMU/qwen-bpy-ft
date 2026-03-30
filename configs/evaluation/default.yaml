@@ -1,0 +1,18 @@
+model:
+  checkpoint_dir: "outputs/qwen2_5_coder_7b_lora"
+  model_name_or_path: "Qwen/Qwen2.5-Coder-7B-Instruct"
+  inference_backend: "hf"   # "hf" or "vllm"
+  temperature: 0.0
+  max_new_tokens: 2048
+
+evaluation:
+  prompts_file: "data/eval/prompts.jsonl"
+  output_dir: "data/eval"
+  pass_at_k: [1, 3, 5]
+  num_samples_per_prompt: 5
+  max_repair_turns: 0       # 0 = single-shot (no self-repair during eval)
+
+blender:
+  binary: null              # falls back to BLENDER_BIN env var
+  timeout_sec: 60
+  headless: true

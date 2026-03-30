@@ -1,0 +1,29 @@
+generation:
+  model_id: "gpt-4o"
+  api_base: "https://api.openai.com/v1"
+  api_key_env: "OPENAI_API_KEY"
+  temperature: 0.8
+  max_tokens: 2048
+  max_repair_turns: 4         # max repair attempts per trajectory
+
+collection:
+  target_trajectories: 150
+  max_attempts_per_seed: 8    # how many seeds to try before giving up on one
+  seeds_file: null            # null = use built-in SCENE_SEEDS list
+  output_dir: "data/raw"
+  output_prefix: "trajectories"
+
+blender:
+  binary: null                # null = use BLENDER_BIN env var or 'blender' on PATH
+  timeout_sec: 60
+  headless: true
+
+quality:
+  min_turns: 3
+  min_objects: 2
+  require_repair_turn: true
+  require_zero_exit_code: true
+
+logging:
+  level: "INFO"
+  fmt: "json"
