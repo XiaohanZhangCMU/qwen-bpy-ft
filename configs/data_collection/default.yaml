@@ -19,7 +19,7 @@ blender:
   headless: true
 
 quality:
-  min_turns: 3
+  min_turns: 2
   min_objects: 2
   require_repair_turn: true
   require_zero_exit_code: true
