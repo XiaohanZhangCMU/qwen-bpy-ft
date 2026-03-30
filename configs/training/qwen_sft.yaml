@@ -31,8 +31,8 @@ overwrite_output_dir: false
 
 ### Training
 num_train_epochs: 3
-per_device_train_batch_size: 2
-gradient_accumulation_steps: 8    # effective batch = 2 * 8 * 4 GPUs = 64
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 16    # effective batch = 1 * 8 * 4 GPUs = 32
 learning_rate: 5.0e-5
 lr_scheduler_type: cosine
 warmup_ratio: 0.05
