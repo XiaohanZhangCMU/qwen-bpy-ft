@@ -28,7 +28,8 @@ def run_training(config_path: str | Path) -> int:
         logger.error("Config not found", extra={"path": str(config_path)})
         return 1
 
-    cmd = ["llamafactory-cli", "train", str(config_path)]
+    cli = Path(sys.executable).parent / "llamafactory-cli"
+    cmd = [str(cli), "train", str(config_path)]
     logger.info("Launching LLaMA-Factory", extra={"cmd": " ".join(cmd)})
 
     proc = subprocess.run(cmd, check=False)
