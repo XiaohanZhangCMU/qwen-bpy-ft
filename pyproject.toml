@@ -16,6 +16,8 @@ dependencies = [
     "tqdm>=4.0",
     "PyYAML>=6.0",
     # Training (LLaMA-Factory installed separately on cluster)
+    # Inference serving
+    "vllm>=0.4",
     # Evaluation
     "torch>=2.1",
     "transformers>=4.40",

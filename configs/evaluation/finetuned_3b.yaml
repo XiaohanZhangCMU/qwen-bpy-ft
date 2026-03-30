@@ -1,8 +1,8 @@
-# Null benchmark: base Qwen-3B with NO adapter — served via vLLM on port 8000
+# Fine-tuned Qwen-3B — served via vLLM on port 8000 as LoRA adapter "ft_qwen3b"
 # Start server first: bash scripts/serve_3b.sh
 model:
-  checkpoint_dir: ""
-  model_name_or_path: "Qwen/Qwen2.5-Coder-3B-Instruct"  # served as base model name
+  checkpoint_dir: "outputs/qwen2_5_coder_3b_lora"
+  model_name_or_path: "ft_qwen3b"   # the --lora-modules name registered in serve_3b.sh
   inference_backend: "vllm"
   api_base: "http://localhost:8000/v1"
   temperature: 0.0

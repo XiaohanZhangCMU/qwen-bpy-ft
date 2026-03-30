@@ -1,8 +1,9 @@
-# Oracle baseline: GPT-4o — establishes the ceiling
+# Oracle baseline: GPT-4o — no local server needed
 model:
   checkpoint_dir: ""
   model_name_or_path: "gpt-4o"
   inference_backend: "openai"
+  api_base: "https://api.openai.com/v1"
   temperature: 0.0
   max_new_tokens: 2048
 

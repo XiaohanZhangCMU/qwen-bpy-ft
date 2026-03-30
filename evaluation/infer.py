@@ -187,6 +187,7 @@ def build_inferencer(
     checkpoint_dir: Optional[str] = None,
     temperature: float = 0.0,
     max_new_tokens: int = 2048,
+    api_base: Optional[str] = None,
 ) -> Inferencer:
     if backend == "openai":
         return OpenAIInferencer(
@@ -196,7 +197,8 @@ def build_inferencer(
         )
     if backend == "vllm":
         return VLLMInferencer(
-            model_id=checkpoint_dir or model_name_or_path,
+            model_id=model_name_or_path,
+            api_base=api_base,
             temperature=temperature,
             max_tokens=max_new_tokens,
         )

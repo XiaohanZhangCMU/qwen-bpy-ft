@@ -33,9 +33,10 @@ logger = get_logger(__name__)
 # ---------------------------------------------------------------------------
 
 class ModelConfig(BaseModel):
-    checkpoint_dir: str = "outputs/qwen_lora"
+    checkpoint_dir: str = ""
     model_name_or_path: str = "Qwen/Qwen2.5-Coder-7B-Instruct"
-    inference_backend: str = "hf"       # "hf" or "vllm"
+    inference_backend: str = "vllm"
+    api_base: str = "http://localhost:8000/v1"   # vLLM server URL
     temperature: float = 0.0
     max_new_tokens: int = 2048
 
@@ -139,6 +140,7 @@ def run_eval(cfg: EvalPipelineConfig, num_prompts: Optional[int] = None, tag: Op
         checkpoint_dir=cfg.model.checkpoint_dir,
         temperature=cfg.model.temperature,
         max_new_tokens=cfg.model.max_new_tokens,
+        api_base=cfg.model.api_base,
     )
 
     # Evaluate

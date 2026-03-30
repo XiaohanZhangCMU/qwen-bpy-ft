@@ -1,8 +1,10 @@
-# Fine-tuned Qwen2.5-Coder-7B LoRA checkpoint
+# Fine-tuned Qwen-7B — served via vLLM on port 8001 as LoRA adapter "ft_qwen7b"
+# Start server first: bash scripts/serve_7b.sh
 model:
   checkpoint_dir: "outputs/qwen2_5_coder_7b_lora"
-  model_name_or_path: "Qwen/Qwen2.5-Coder-7B-Instruct"
-  inference_backend: "hf"
+  model_name_or_path: "ft_qwen7b"   # the --lora-modules name registered in serve_7b.sh
+  inference_backend: "vllm"
+  api_base: "http://localhost:8001/v1"
   temperature: 0.0
   max_new_tokens: 2048
 
