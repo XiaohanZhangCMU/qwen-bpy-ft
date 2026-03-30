@@ -20,7 +20,7 @@ dependencies = [
     "vllm>=0.4",
     # Evaluation
     "torch>=2.1",
-    "transformers>=4.40",
+    "transformers>=4.45.0,<=4.52.4,!=4.52.0",
     "accelerate>=0.28",
     "datasets>=2.18",
     # CLIP eval
