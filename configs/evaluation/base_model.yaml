@@ -1,0 +1,19 @@
+# Null benchmark: base Qwen model with NO adapter — establishes the floor
+model:
+  checkpoint_dir: ""                              # empty = no adapter loaded
+  model_name_or_path: "Qwen/Qwen2.5-Coder-3B-Instruct"
+  inference_backend: "hf"
+  temperature: 0.0
+  max_new_tokens: 2048
+
+evaluation:
+  prompts_file: "data/eval/prompts.jsonl"
+  output_dir: "data/eval"
+  pass_at_k: [1, 3, 5]
+  num_samples_per_prompt: 5
+  max_repair_turns: 0
+
+blender:
+  binary: null
+  timeout_sec: 60
+  headless: true

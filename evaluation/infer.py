@@ -1,9 +1,10 @@
 """
 Model inference for evaluation.
 
-Supports two backends:
-  - "hf"   : HuggingFace transformers (loads adapter via PEFT if checkpoint_dir != base model)
-  - "vllm" : vLLM server (calls OpenAI-compatible /v1/chat/completions)
+Supports three backends:
+  - "hf"     : HuggingFace transformers (loads adapter via PEFT if checkpoint_dir set)
+  - "vllm"   : vLLM server (calls OpenAI-compatible /v1/chat/completions)
+  - "openai" : OpenAI API directly (for GPT-4o baseline)
 """
 
 from __future__ import annotations
@@ -139,6 +140,44 @@ class VLLMInferencer(Inferencer):
 
 
 # ---------------------------------------------------------------------------
+# OpenAI backend
+# ---------------------------------------------------------------------------
+
+class OpenAIInferencer(Inferencer):
+    """
+    Calls the OpenAI API directly.  Used for the GPT-4o oracle baseline.
+    Reads OPENAI_API_KEY from the environment.
+    """
+
+    def __init__(
+        self,
+        model_id: str = "gpt-4o",
+        temperature: float = 0.0,
+        max_tokens: int = 2048,
+    ) -> None:
+        from openai import OpenAI
+
+        self.model_id = model_id
+        self.temperature = temperature
+        self.max_tokens = max_tokens
+        self._client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+
+    def generate(self, prompt: str, n: int = 1) -> list[str]:
+        messages = [
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": prompt},
+        ]
+        response = self._client.chat.completions.create(
+            model=self.model_id,
+            messages=messages,
+            temperature=self.temperature,
+            max_tokens=self.max_tokens,
+            n=n,
+        )
+        return [choice.message.content or "" for choice in response.choices]
+
+
+# ---------------------------------------------------------------------------
 # Factory
 # ---------------------------------------------------------------------------
 
@@ -149,6 +188,12 @@ def build_inferencer(
     temperature: float = 0.0,
     max_new_tokens: int = 2048,
 ) -> Inferencer:
+    if backend == "openai":
+        return OpenAIInferencer(
+            model_id=model_name_or_path,
+            temperature=temperature,
+            max_tokens=max_new_tokens,
+        )
     if backend == "vllm":
         return VLLMInferencer(
             model_id=checkpoint_dir or model_name_or_path,
