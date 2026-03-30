@@ -48,6 +48,7 @@ def aggregate_prompt(
     c = sum(1 for r in runs if r.exit_code == 0 and r.n_mesh >= 1)
     mean_objs = sum(r.n_objects for r in runs) / max(n, 1)
     mean_elapsed = sum(r.elapsed_sec for r in runs) / max(n, 1)
+    mean_generation = sum(r.generation_sec for r in runs) / max(n, 1)
 
     result = PromptResult(
         prompt_id=prompt_id,
@@ -55,6 +56,7 @@ def aggregate_prompt(
         runs=runs,
         mean_n_objects=round(mean_objs, 2),
         mean_elapsed_sec=round(mean_elapsed, 3),
+        mean_generation_sec=round(mean_generation, 3),
     )
     if 1 in ks:
         result.pass_at_1 = pass_at_k(n, c, 1)
@@ -85,6 +87,7 @@ def compute_summary(
 
     all_runs = [run for pr in prompt_results for run in pr.runs]
     exec_success = sum(1 for r in all_runs if r.exit_code == 0) / max(len(all_runs), 1)
+    mean_gen_sec = sum(r.mean_generation_sec for r in prompt_results) / n
 
     return EvalSummary(
         model_id=model_id,
@@ -95,5 +98,6 @@ def compute_summary(
         macro_pass_at_5=round(macro_p5, 4),
         mean_n_objects=round(mean_objs, 2),
         execution_success_rate=round(exec_success, 4),
+        mean_generation_sec=round(mean_gen_sec, 3),
         prompt_results=prompt_results,
     )

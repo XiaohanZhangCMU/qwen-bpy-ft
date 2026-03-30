@@ -21,31 +21,26 @@ def load_summary(path: str) -> dict:
         return json.load(f)
 
 
-def print_table(rows: list[dict], labels: list[str]) -> None:
-    metrics = [
-        ("pass@1",               "macro_pass_at_1",       "{:.1%}"),
-        ("pass@3",               "macro_pass_at_3",       "{:.1%}"),
-        ("pass@5",               "macro_pass_at_5",       "{:.1%}"),
-        ("exec success rate",    "execution_success_rate","{:.1%}"),
-        ("mean objects/scene",   "mean_n_objects",        "{:.1f}"),
-    ]
-
-    col_w = max(len(l) for l in labels) + 2
-    metric_w = 20
-
-    # Header
+def _print_section(
+    title: str,
+    metrics: list[tuple[str, str, str, bool]],  # (display, key, fmt, higher_is_better)
+    rows: list[dict],
+    labels: list[str],
+    col_w: int,
+    metric_w: int,
+) -> None:
+    print(f"\n{title}")
     header = f"{'Metric':<{metric_w}}" + "".join(f"{l:>{col_w}}" for l in labels)
-    print()
     print(header)
     print("-" * len(header))
 
-    for display_name, key, fmt in metrics:
-        row = f"{display_name:<{metric_w}}"
+    for display_name, key, fmt, higher_is_better in metrics:
         values = [r.get(key, float("nan")) for r in rows]
-        best = max(v for v in values if v == v)  # nan-safe max
+        valid = [v for v in values if v == v]
+        best = max(valid) if higher_is_better else min(valid) if valid else float("nan")
+        row = f"{display_name:<{metric_w}}"
         for v in values:
             cell = fmt.format(v) if v == v else "N/A"
-            # Bold the best value with an asterisk
             if v == v and v == best:
                 cell = cell + "*"
             row += f"{cell:>{col_w}}"
@@ -53,17 +48,16 @@ def print_table(rows: list[dict], labels: list[str]) -> None:
 
     print()
     print("* = best in row")
-    print()
 
-    # Delta columns: improvement of each non-baseline over the first entry
+    # Delta vs baseline
     if len(rows) >= 2:
-        print("Δ vs baseline (first column):")
+        print(f"\nΔ vs baseline ({labels[0]}):")
         delta_header = f"{'Metric':<{metric_w}}" + "".join(f"{l:>{col_w}}" for l in labels[1:])
         print(delta_header)
         print("-" * len(delta_header))
-        for display_name, key, fmt in metrics:
-            row = f"{display_name:<{metric_w}}"
+        for display_name, key, fmt, _ in metrics:
             base_val = rows[0].get(key, float("nan"))
+            row = f"{display_name:<{metric_w}}"
             for r in rows[1:]:
                 v = r.get(key, float("nan"))
                 if v != v or base_val != base_val:
@@ -71,14 +65,30 @@ def print_table(rows: list[dict], labels: list[str]) -> None:
                 else:
                     delta = v - base_val
                     sign = "+" if delta >= 0 else ""
-                    # Use same format but show as delta
-                    if "%" in fmt.format(0.0):
-                        cell = f"{sign}{delta:.1%}"
-                    else:
-                        cell = f"{sign}{delta:.1f}"
+                    cell = f"{sign}{delta:.1%}" if "%" in fmt.format(0.0) else f"{sign}{delta:.2f}s" if "s" in fmt else f"{sign}{delta:.1f}"
                     row += f"{cell:>{col_w}}"
             print(row)
-        print()
+
+
+def print_table(rows: list[dict], labels: list[str]) -> None:
+    col_w = max(len(l) for l in labels) + 2
+    metric_w = 22
+
+    quality_metrics = [
+        ("pass@1",             "macro_pass_at_1",        "{:.1%}", True),
+        ("pass@3",             "macro_pass_at_3",        "{:.1%}", True),
+        ("pass@5",             "macro_pass_at_5",        "{:.1%}", True),
+        ("exec success rate",  "execution_success_rate", "{:.1%}", True),
+        ("mean objects/scene", "mean_n_objects",         "{:.1f}", True),
+    ]
+
+    speed_metrics = [
+        ("avg generation time", "mean_generation_sec", "{:.2f}s", False),  # lower is better
+    ]
+
+    _print_section("=== Quality metrics ===", quality_metrics, rows, labels, col_w, metric_w)
+    _print_section("=== Speed metrics ===",   speed_metrics,   rows, labels, col_w, metric_w)
+    print()
 
 
 def main() -> None:

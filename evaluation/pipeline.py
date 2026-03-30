@@ -71,8 +71,14 @@ def evaluate_prompt(
     cfg: EvalPipelineConfig,
 ) -> list[SingleRunResult]:
     """Generate *num_samples* scripts for *prompt* and execute each."""
+    import time
+
     n = cfg.evaluation.num_samples_per_prompt
+
+    # Time the full generate() call, then split evenly per sample
+    t0 = time.monotonic()
     samples = inferencer.generate(prompt, n=n)
+    generation_sec_per_sample = round((time.monotonic() - t0) / max(len(samples), 1), 3)
 
     results: list[SingleRunResult] = []
     for idx, sample in enumerate(samples):
@@ -83,6 +89,7 @@ def evaluate_prompt(
                 sample_idx=idx,
                 exit_code=-3,
                 stderr="No Python code block found in model output.",
+                generation_sec=generation_sec_per_sample,
                 script=sample,
             ))
             continue
@@ -102,6 +109,7 @@ def evaluate_prompt(
             stdout=exec_result.stdout[-500:],
             stderr=exec_result.stderr[-1000:],
             elapsed_sec=exec_result.elapsed_sec,
+            generation_sec=generation_sec_per_sample,
             n_objects=scene_info.n_objects,
             n_mesh=scene_info.n_mesh,
             script=code,
@@ -110,7 +118,7 @@ def evaluate_prompt(
     return results
 
 
-def run_eval(cfg: EvalPipelineConfig) -> Path:
+def run_eval(cfg: EvalPipelineConfig, num_prompts: Optional[int] = None) -> Path:
     """Main evaluation loop. Returns path to the summary JSON."""
     # Load prompts
     prompts_path = Path(cfg.evaluation.prompts_file)
@@ -120,6 +128,8 @@ def run_eval(cfg: EvalPipelineConfig) -> Path:
             line = line.strip()
             if line:
                 prompts.append(json.loads(line))
+    if num_prompts:
+        prompts = prompts[:num_prompts]
     logger.info("Loaded eval prompts", extra={"n": len(prompts)})
 
     # Build inferencer
@@ -184,8 +194,9 @@ def main() -> None:
     parser.add_argument(
         "--config", default="configs/evaluation/default.yaml", help="Evaluation config YAML"
     )
-    parser.add_argument("--backend", choices=["hf", "vllm"], help="Override inference backend")
+    parser.add_argument("--backend", choices=["hf", "vllm", "openai"], help="Override inference backend")
     parser.add_argument("--checkpoint", help="Override checkpoint_dir")
+    parser.add_argument("--num-prompts", type=int, help="Only evaluate the first N prompts (quick test)")
     args = parser.parse_args()
 
     from dotenv import load_dotenv
@@ -197,7 +208,7 @@ def main() -> None:
     if args.checkpoint:
         cfg.model.checkpoint_dir = args.checkpoint
 
-    out = run_eval(cfg)
+    out = run_eval(cfg, num_prompts=args.num_prompts)
     print(f"\nResults written to: {out}")
 
 

@@ -15,7 +15,8 @@ class SingleRunResult(BaseModel):
     exit_code: int
     stdout: str = ""
     stderr: str = ""
-    elapsed_sec: float = 0.0
+    elapsed_sec: float = 0.0       # Blender execution time
+    generation_sec: float = 0.0    # model inference time for this sample
     n_objects: int = 0
     n_mesh: int = 0
     script: Optional[str] = None
@@ -31,6 +32,7 @@ class PromptResult(BaseModel):
     pass_at_5: float = 0.0
     mean_n_objects: float = 0.0
     mean_elapsed_sec: float = 0.0
+    mean_generation_sec: float = 0.0  # avg inference time per sample
 
 
 class EvalSummary(BaseModel):
@@ -43,5 +45,6 @@ class EvalSummary(BaseModel):
     macro_pass_at_5: float = 0.0
     mean_n_objects: float = 0.0
     execution_success_rate: float = 0.0
+    mean_generation_sec: float = 0.0   # avg inference time across all prompts
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     prompt_results: list[PromptResult] = Field(default_factory=list)
