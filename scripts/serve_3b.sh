@@ -31,5 +31,6 @@ python -m vllm.entrypoints.openai.api_server \
   --tensor-parallel-size 4 \
   --gpu-memory-utilization 0.85 \
   --max-model-len 4096 \
+  --enforce-eager \
   --port 8000 \
   --host 0.0.0.0
