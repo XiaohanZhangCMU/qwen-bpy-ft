@@ -43,6 +43,9 @@ moonlake-prepare  = "training.prepare_dataset:main"
 moonlake-train    = "training.train:main"
 moonlake-eval     = "evaluation.pipeline:main"
 
+[tool.setuptools.packages.find]
+include = ["shared*", "data_collection*", "training*", "evaluation*"]
+
 [tool.ruff]
 line-length = 100
 target-version = "py310"
