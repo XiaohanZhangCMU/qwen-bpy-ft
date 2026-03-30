@@ -118,7 +118,7 @@ def evaluate_prompt(
     return results
 
 
-def run_eval(cfg: EvalPipelineConfig, num_prompts: Optional[int] = None) -> Path:
+def run_eval(cfg: EvalPipelineConfig, num_prompts: Optional[int] = None, tag: Optional[str] = None) -> Path:
     """Main evaluation loop. Returns path to the summary JSON."""
     # Load prompts
     prompts_path = Path(cfg.evaluation.prompts_file)
@@ -169,7 +169,8 @@ def run_eval(cfg: EvalPipelineConfig, num_prompts: Optional[int] = None) -> Path
     output_dir = Path(cfg.evaluation.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S")
-    out_path = output_dir / f"results_{ts}.json"
+    tag_part = f"_{tag}" if tag else ""
+    out_path = output_dir / f"results{tag_part}_{ts}.json"
     with open(out_path, "w") as f:
         f.write(summary.model_dump_json(indent=2))
 
@@ -197,6 +198,7 @@ def main() -> None:
     parser.add_argument("--backend", choices=["hf", "vllm", "openai"], help="Override inference backend")
     parser.add_argument("--checkpoint", help="Override checkpoint_dir")
     parser.add_argument("--num-prompts", type=int, help="Only evaluate the first N prompts (quick test)")
+    parser.add_argument("--tag", help="Label embedded in the output filename, e.g. 'base_qwen3b'")
     args = parser.parse_args()
 
     from dotenv import load_dotenv
@@ -208,7 +210,7 @@ def main() -> None:
     if args.checkpoint:
         cfg.model.checkpoint_dir = args.checkpoint
 
-    out = run_eval(cfg, num_prompts=args.num_prompts)
+    out = run_eval(cfg, num_prompts=args.num_prompts, tag=args.tag)
     print(f"\nResults written to: {out}")
 
 

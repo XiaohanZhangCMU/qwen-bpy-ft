@@ -13,8 +13,11 @@ fi
 
 CONFIG="${1:-configs/evaluation/default.yaml}"
 
+export CUDA_VISIBLE_DEVICES=4,5,6,7
+
 echo "=== Moonlake: Evaluation ==="
 echo "Config:  $CONFIG"
+echo "GPUs:    $CUDA_VISIBLE_DEVICES"
 echo "Prompts: $(grep -c '' data/eval/prompts.jsonl 2>/dev/null || echo '?') held-out prompts"
 echo ""
 

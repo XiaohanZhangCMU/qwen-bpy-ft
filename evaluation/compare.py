@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import textwrap
 from pathlib import Path
 
 
@@ -91,37 +92,84 @@ def print_table(rows: list[dict], labels: list[str]) -> None:
     print()
 
 
+def find_latest(tag: str, results_dir: str = "data/eval") -> Path:
+    """Return the most recently modified results file whose name contains *tag*."""
+    matches = sorted(
+        Path(results_dir).glob(f"results_{tag}_*.json"),
+        key=lambda p: p.stat().st_mtime,
+        reverse=True,
+    )
+    if not matches:
+        raise FileNotFoundError(
+            f"No result file found for tag '{tag}' in {results_dir}/\n"
+            f"Run: python -m evaluation.pipeline --config <cfg> --tag {tag}"
+        )
+    return matches[0]
+
+
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Compare eval results across models")
-    parser.add_argument(
-        "--results", nargs="+", required=True,
-        help="Paths to result JSON files (in order: base, finetuned, openai, ...)"
+    parser = argparse.ArgumentParser(
+        description="Compare eval results across models",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=textwrap.dedent("""
+        Examples:
+          # By explicit file paths:
+          python -m evaluation.compare \\
+            --results data/eval/results_base_qwen3b_*.json \\
+                      data/eval/results_ft_qwen3b_*.json \\
+                      data/eval/results_ft_qwen7b_*.json \\
+                      data/eval/results_openai_*.json \\
+            --labels "Base Qwen-3B" "FT Qwen-3B" "FT Qwen-7B" "GPT-4o"
+
+          # By tag (automatically finds the latest run for each):
+          python -m evaluation.compare \\
+            --tags base_qwen3b ft_qwen3b ft_qwen7b openai \\
+            --labels "Base Qwen-3B" "FT Qwen-3B" "FT Qwen-7B" "GPT-4o"
+        """),
     )
-    parser.add_argument(
-        "--labels", nargs="+",
-        help="Display names for each result file (same order)"
+    src = parser.add_mutually_exclusive_group(required=True)
+    src.add_argument(
+        "--results", nargs="+",
+        help="Explicit paths to result JSON files",
     )
-    parser.add_argument(
-        "--save", help="Optional path to save the comparison as JSON"
+    src.add_argument(
+        "--tags", nargs="+",
+        help="Tags to look up (finds latest results_<tag>_*.json in data/eval/)",
     )
+    parser.add_argument("--labels", nargs="+", help="Display names (same order as results/tags)")
+    parser.add_argument("--results-dir", default="data/eval", help="Directory to search when using --tags")
+    parser.add_argument("--save", help="Optional path to save the comparison as JSON")
     args = parser.parse_args()
 
-    if args.labels and len(args.labels) != len(args.results):
-        parser.error("--labels must have the same count as --results")
+    if args.tags:
+        paths = [str(find_latest(t, args.results_dir)) for t in args.tags]
+        default_labels = args.tags
+    else:
+        paths = args.results
+        default_labels = [Path(p).stem for p in paths]
 
-    labels = args.labels or [Path(p).stem for p in args.results]
-    rows = [load_summary(p) for p in args.results]
+    if args.labels and len(args.labels) != len(paths):
+        parser.error("--labels must have the same count as --results/--tags")
+
+    labels = args.labels or default_labels
+    rows = [load_summary(p) for p in paths]
+
+    # Print which files are being compared
+    print("\nLoading results:")
+    for label, p in zip(labels, paths):
+        print(f"  {label:20s}  {p}")
 
     print_table(rows, labels)
 
     if args.save:
         comparison = {
             label: {
-                "macro_pass_at_1":      r.get("macro_pass_at_1"),
-                "macro_pass_at_3":      r.get("macro_pass_at_3"),
-                "macro_pass_at_5":      r.get("macro_pass_at_5"),
+                "macro_pass_at_1":        r.get("macro_pass_at_1"),
+                "macro_pass_at_3":        r.get("macro_pass_at_3"),
+                "macro_pass_at_5":        r.get("macro_pass_at_5"),
                 "execution_success_rate": r.get("execution_success_rate"),
-                "mean_n_objects":       r.get("mean_n_objects"),
+                "mean_n_objects":         r.get("mean_n_objects"),
+                "mean_generation_sec":    r.get("mean_generation_sec"),
             }
             for label, r in zip(labels, rows)
         }
