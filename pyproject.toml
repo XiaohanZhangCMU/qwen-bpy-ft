@@ -48,6 +48,16 @@ moonlake-eval     = "evaluation.pipeline:main"
 [tool.setuptools.packages.find]
 include = ["shared*", "data_collection*", "training*", "evaluation*"]
 
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu128" }
+torchvision = { index = "pytorch-cu128" }
+torchaudio = { index = "pytorch-cu128" }
+
 [tool.ruff]
 line-length = 100
 target-version = "py310"
