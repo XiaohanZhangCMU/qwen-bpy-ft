@@ -48,6 +48,7 @@ echo ""
   --tensor-parallel-size 4 \
   --gpu-memory-utilization 0.85 \
   --max-model-len 4096 \
+  --max-lora-rank 32 \
   --enforce-eager \
   --port "$PORT" \
   --host 0.0.0.0
