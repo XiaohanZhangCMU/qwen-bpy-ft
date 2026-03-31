@@ -29,7 +29,9 @@ else
   echo "  Fix: sudo apt-get install python3.10-dev" >&2
 fi
 
-echo "Starting vLLM server for Qwen-3B on port 8000..."
+PORT="${VLLM_PORT:-8000}"
+
+echo "Starting vLLM server for Qwen-3B on port $PORT..."
 echo "  Base model : Qwen/Qwen2.5-Coder-3B-Instruct"
 echo "  LoRA       : ft_qwen3b -> outputs/qwen2_5_coder_3b_lora"
 echo "  GPUs       : $CUDA_VISIBLE_DEVICES"
@@ -43,5 +45,5 @@ python -m vllm.entrypoints.openai.api_server \
   --gpu-memory-utilization 0.85 \
   --max-model-len 4096 \
   --enforce-eager \
-  --port 8000 \
+  --port "$PORT" \
   --host 0.0.0.0
